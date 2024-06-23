@@ -1626,71 +1626,39 @@ In summary, the `volumes` configuration in your `docker-compose.yml` file is set
 
 
 
-# Docker Swarm
+# Docker machine
 
-## ([hands on playlist on the docker swarm part](https://www.youtube.com/watch?v=z-Pck8o10bE&list=PL34sAs7_26wO2pVeB-2xdI76Tp8t704UN&index=7))
-
-**Docker Swarm is a native clustering and orchestration tool for Docker. It allows you to manage a cluster of Docker nodes (machines) as a single virtual system, making it easier to deploy, manage, and scale applications. Here's an overview of Docker Swarm**   and its key features
-
-
-- `docker swarm init --advertise-addr 192.x.x.x:2377 --listen-addr 192.x.x.x:2377`
-  - result
-    ```
-    To add a worker to this swarm, run the following command:
-
-        docker swarm join --token SWMTKN-1-2co1q1rz3e5xtj067uw611cyt4awl98gnmcwimx3ff5nudewb3-1tneipkgfovyuizm1gwbqyvos 192.x.x.x:2377
-
-    To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
-    ```
-  - to display the token `docker swarm join-token worker`
-  - after initializing the swarm
-    - result of `docker info | grep -i -A 8 "swarm`
-    ```
-    Swarm: active
-    NodeID: 3w1t4p9sss2zhwcfjxx3ldgu9
-    Is Manager: true
-    ClusterID: ozl9udz16cday52m0uer7f58n
-    Managers: 1
-    Nodes: 1
-    Data Path Port: 4789
-    Orchestration:
-    Task History Retention Limit: 5
-
-    ```
-  - add new manager `docker swarm join-token manager`
-
-
-## Docker machine
-
-### **Machine lets you create Docker hosts on your computer, on cloud providers, and inside your own data center. It creates servers, installs Docker on them, then configures the Docker client to talk to them.**
-### **it's deprecated now since `Sep 26, 2021`
+### **It lets you create Docker hosts on your computer, on cloud providers, and inside your own data center. It creates servers, installs Docker on them, then configures the Docker client to talk to them.**
+### **it's deprecated now since `Sep 26, 2021`**
 
 ## Install Docker Machine
 
-
-```
-curl -L https://github.com/docker/machine/releases/download/v0.16.2/docker-machine-`uname -s`-`uname -m` >/tmp/docker-machine &&
-    chmod +x /tmp/docker-machine &&
-    sudo cp /tmp/docker-machine /usr/local/bin/docker-machine`
-```
-`sudo apt update`
-`sudo apt install virtualbox`
-`nano ~/.bashrc`
-`export PATH="/usr/lib/virtualbox:$PATH"`
-`source ~/.bashrc`
-`VBoxManage --version`
-``` sh
-sudo docker-machine create --driver virtualbox manager1
-sudo docker-machine create --driver virtualbox worker1
-sudo docker-machine create --driver virtualbox worker2
-```
-i got this issue when i ran `sudo docker-machine create --driver virtualbox manager1`
+- 
+  ```
+  curl -L https://github.com/docker/machine/releases/download/v0.16.2/docker-machine-`uname -s`-`uname -m` >/tmp/docker-machine &&
+      chmod +x /tmp/docker-machine &&
+      sudo cp /tmp/docker-machine /usr/local/bin/docker-machine`
+  ```
+- `sudo apt update`
+- `sudo apt install virtualbox`
+- `nano ~/.bashrc`
+- `export PATH="/usr/lib/virtualbox:$PATH"`
+- `source ~/.bashrc`
+- `VBoxManage --version`
+- 
+  ``` 
+  sudo docker-machine create --driver virtualbox manager1
+  sudo docker-machine create --driver virtualbox worker1
+  sudo docker-machine create --driver virtualbox worker2
+  ```
+### **i got this issue when i ran `sudo docker-machine create --driver virtualbox manager1`**
 ```
 Error creating machine: Error in driver during machine creation: Error setting up host only network on machine start: /usr/bin/VBoxManage hostonlyif ipconfig vboxnet1 --ip 192.x.x.x --netmask 255.255.255.0 failed:
 VBoxManage: error: Code E_ACCESSDENIED (0x80070005) - Access denied (extended info not available)
 VBoxManage: error: Context: "EnableStaticIPConfig(Bstr(pszIp).raw(), Bstr(pszNetmask).raw())" at line 242 of file VBoxManageHostonly.cpp
 
 ```
+### Solved it
 i  ([solved it by following these instructions](https://stackoverflow.com/questions/70281938/docker-machine-unable-to-create-a-machine-on-macos-vboxmanage-returning-e-acces))
 - find all the machines with docker-machine ls
 - remove the ones you don't need with docker-machine rm -y <machineName>
@@ -1699,11 +1667,10 @@ i  ([solved it by following these instructions](https://stackoverflow.com/questi
 - Create a vbox folder in the etc directory with `sudo mkdir /etc/vbox/networks.conf`
 - Create a file networks.conf in the vbox folder, for example by sudo touch, place the below line there
   - 0.0.0.0/0 ::/0
-- P.S.1. One major drawback of the above solution is that every time you start the docker machine with docker-machine start <machineName> It takes a lot of time on Waiting for an IP...
+- **P.S. One major drawback of the above solution is that every time you start the docker machine with docker-machine start <machineName> It takes a lot of time on Waiting for an IP...**
 - `sudo usermod -aG vboxusers $(whoami)`
 - `sudo usermod -aG vboxusers ahmed`
-- then run 
-  - `docker-machine create --driver virtualbox manager3`
+- then run `docker-machine create --driver virtualbox manager3`
   ```
     Running pre-create checks...
     Creating machine...
@@ -1726,16 +1693,17 @@ i  ([solved it by following these instructions](https://stackoverflow.com/questi
     To see how to connect your Docker Client to the Docker Engine running on this virtual machine, run: docker-machine env manager3
 
   ```
-  - `docker-machine env manager3`
-    ```
-    export DOCKER_TLS_VERIFY="1"
-    export DOCKER_HOST="tcp://192.x.x.x:2376"
-    export DOCKER_CERT_PATH="/home/ahmed/.docker/machine/machines/manager3"
-    export DOCKER_MACHINE_NAME="manager3"
-    # Run this command to configure your shell: 
-    # eval $(docker-machine env manager3)
-    ```
-  - `eval $(docker-machine env manager3)`
+  - if you want to activate the created node on your host machine similar to ssh
+    - `docker-machine env manager3`
+      ```
+      export DOCKER_TLS_VERIFY="1"
+      export DOCKER_HOST="tcp://192.x.x.x:2376"
+      export DOCKER_CERT_PATH="/home/ahmed/.docker/machine/machines/manager3"
+      export DOCKER_MACHINE_NAME="manager3"
+      # Run this command to configure your shell: 
+      # eval $(docker-machine env manager3)
+      ```
+    - `eval $(docker-machine env manager3)`
   - check status `docker-machine ls`
     ```
     NAME       ACTIVE   DRIVER       STATE     URL                         SWARM   DOCKER      ERRORS
@@ -1766,10 +1734,94 @@ i  ([solved it by following these instructions](https://stackoverflow.com/questi
     Machine "manager1" was stopped.
     ``` 
   - `docker-machine create --driver virtualbox --help | less` helps you to assign certain specs to your vm 
+ 
+
+# Docker Swarm
+
+## ([hands on playlist on the docker swarm part](https://www.youtube.com/watch?v=z-Pck8o10bE&list=PL34sAs7_26wO2pVeB-2xdI76Tp8t704UN&index=7))
+
+## The problem we face
+- As we can see things are getting bigger, one application may have different services with different images
+- at production level we have have lots of containers
+- it would be complex to handle such load using single docker host
+- how can we handle loading the services into multiple hosts yet treating them as one single unit to orechestrate different networks as if they were one network
+- The most used solution is **Kubernetes** but docker itself offers a solution called **docker Swarm**
+
+## Definition
+**Docker Swarm is a native clustering and orchestration tool for Docker. It allows you to manage a cluster of Docker nodes (machines) as a single virtual system, making it easier to deploy, manage, and scale applications. Here's an overview of Docker Swarm**
+- **Every node in the docker swarm either is a manager or worker**
+- **Manager node is the controller where you can create, remove**
+- **There's in memory database value store  `/etcd` in the manager nodes where it contains all the configurations of the swarm, service ..etc.**
+- **Manager nodes can have any count but it's recommended to**
+  - **have count between [1,7]**
+  - **odd count**
+- **Manager node can do some work similar to the worker, so in this case it acts as a manager & worker**
+- **Worker nodes** can have count of any size
+
+## Initializing a Swarm 
+
+- to get the host machine ip address `hostname -I | awk '{print $1}`
+- `docker swarm init --advertise-addr 192.x.x.x:2377 --listen-addr 192.x.x.x:2377`
+  - result
+    ```
+    To add a worker to this swarm, run the following command:
+
+        docker swarm join --token SWMTKN-1-2co1q1rz3e5xtj067uw611cyt4awl98gnmcwimx3ff5nudewb3-1tneipkgfovyuizm1gwbqyvos 192.x.x.x:2377
+
+    To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
+    ```
+  - to display the token `docker swarm join-token worker`
+  - after initializing the swarm
+    - result of `docker info | grep -i -A 8 "swarm`
+    ```
+    Swarm: active
+    NodeID: 3w1t4p9sss2zhwcfjxx3ldgu9
+    Is Manager: true
+    ClusterID: ozl9udz16cday52m0uer7f58n
+    Managers: 1
+    Nodes: 1
+    Data Path Port: 4789
+    Orchestration:
+    Task History Retention Limit: 5
+
+    ```
+  - add new manager `docker swarm join-token manager`
+- 
+- When you run `docker swarm init`, it performs several actions to set up your machine as the manager node of a new swarm cluster. Here are the key things it does:
+
+  1. **Initializes the Swarm Cluster**: Sets up the Docker engine to function as a Swarm manager node.
+
+  2. **Generates Swarm Token**: Creates a unique token that can be used to join other nodes (workers or managers) to the swarm.
+
+  3. **Sets Up Network**: Configures an overlay network that allows containers on different nodes to communicate with each other.
+
+  4. **Establishes Raft Consensus**: Sets up Raft, a consensus algorithm, to manage the cluster state and ensure consistency across the manager nodes.
+
+  5. **Creates a Root Certificate**: Generates a root CA (Certificate Authority) to secure communication between nodes in the swarm using mutual TLS.
+
+  6. **Assigns a Node ID**: Assigns a unique identifier to the manager node within the swarm.
+
+  7. **Generates Join Command**: Provides a command that can be used to add additional nodes to the swarm.
+
+  8. **Enables Service Management**: Configures the manager node to handle scheduling and management of services (tasks) across the swarm.
+
+  9. **Configures Leader Election**: Sets up the manager node to participate in leader election, ensuring high availability and fault tolerance.
+
+## `advertise-addr` and `listen-addr` flags
+The `advertise-addr` and `listen-addr` flags are used in the `docker swarm init` command to configure how the Docker Swarm manager node communicates with other nodes in the swarm.
+
+Certainly! Here's the information in a table format:
+
+| Flag           | Purpose                                                                 | Usage                                                            | Typical Use Case                                                        | Example                                     |
+|----------------|-------------------------------------------------------------------------|------------------------------------------------------------------|--------------------------------------------------------------------------|---------------------------------------------|
+| `advertise-addr`| Specifies the address the manager node will advertise to other nodes it's used for outgoing communication  | Address that other nodes will use to connect to the manager node | Useful for machines with multiple network interfaces or in cloud setups  | `docker swarm init --advertise-addr 192.x.x100` |
+| `listen-addr`  | Specifies the address on which the manager node listens for connections | Address where the manager node expects communication from other nodes | Useful to bind the manager node to a specific network interface or address | `docker swarm init --listen-addr 192.x.x100`    |
+| Both           | Combines `advertise-addr` and `listen-addr` for full control           | Controls both outgoing (advertised) and incoming (listening) addresses | Useful in complex networking environments or with public and private IP addresses | `docker swarm init --advertise-addr 192.x.x100 --listen-addr 0.0.0.0:2377` |
 
 
 
-## create docker swarm
+
+## Create Docker Swarm
 - `ahmed@ahmed-3510:~$ vboxmanage list vms`
 - `docker-machine ssh manager1`
 - `ip a s` to list ip addr of the host machine
@@ -1799,6 +1851,7 @@ i  ([solved it by following these instructions](https://stackoverflow.com/questi
   ```
 
 - `docker swarm join token worker` will **generate a command text that we will copy** that should i use on my other worker machines that i want them to join the swarm group where manager1 will be the leader/master
+  - first login into the other machine using `docker-machine ssh node_name`
   - `docker swarm join --token SWMTKN-1-4sjrnukmz8a5id8oj0k5alupbkd32936y2lg6w7y26i3bwoj03-chtv6m6b2g2xoruodsgzwp1pn 192.x.x.x:2377`
   - as you can see it's activated and not a manager 
     ```
@@ -1813,7 +1866,7 @@ i  ([solved it by following these instructions](https://stackoverflow.com/questi
       Default Runtime: runc
       Init Binary: docker-init
     ```
-  - back to the manager1 instance, as you can see the nodes count becomes **2**
+  - **back to the manager1 instance**, as you can see the nodes count becomes **2**
     ```
     docker@manager1:~$ docker info | grep -i -A 8 "swarm"                          
     Swarm: active
@@ -1835,19 +1888,23 @@ i  ([solved it by following these instructions](https://stackoverflow.com/questi
       kqohy553g0c6ywmym2pe7ldmj     worker1             Ready               Active                                  19.03.12
 
     ```
+  - **note that if we run a manager command inside a worker we will get this error**
+    ```
+    Error response from daemon: This node is not a swarm manager. Worker nodes can't be used to view or modify cluster state. Please run this command on a manager node or promote the current node to a manager.
+    ```
   - we can promote a node to be a manager `docker node promote node_name` 
   - to remove a node from a cluster 
+    - **`docker node update --availability drain node_name` but it's recommended to drain it first to gracefully shut it down**
     - `docker node rm node_name` through `docker node ls` **in the manager node**
     - `docker swarm leave`
-    - **`docker node update --availability drain node_name` but it's recommended to drain it first to gracefully shut it down**
     - `docker-machine stop node_name` then `docker-machine rm node_name`
 
-## creating services in docker swarm cluster  
-there're two modes replicated mode and global mode
+## Create Servcies in docker swarm cluster  
+- **there're two modes replicated mode and global mode (similar to daemon)**
+- **by default the mode is replicated**
 
-by default the mode is replicated
-let's create service
-### create replicated service
+### Create Replicated Service
+* At the previously logged in manager1 node
 * `docker@manager1:~$ docker service create nginx`
   ```
   k5tey721uc2hle7zzmsp3j11m
@@ -1857,22 +1914,28 @@ let's create service
   ```
 * `docker@manager1:~$ docker service ls`
   ```
-    ID                  NAME                MODE              REPLICAS            IMAGE               PORTS
+  ID                  NAME                MODE              REPLICAS            IMAGE               PORTS
   k5tey721uc2h        jolly_banzai        replicated          1/1                 nginx:latest        
   docker@manager1:~$                                                                                                 
   ```
 * `docker@manager1:~$ docker service ps jolly_banzai`
   ```
-    ID                  NAME                IMAGE               NODE                DESIRED STATE       CURRENT STATE           ERROR               PORTS
+  ID                  NAME                IMAGE               NODE                DESIRED STATE       CURRENT STATE           ERROR               PORTS
   gtuyqspi1scl        jolly_banzai.1      nginx:latest        worker1             Running             Running 2 minutes ago
   ```
 * `docker@manager1:~$ docker service inspect jolly_banzai`
 * `docker@manager1:~$ docker service rm jolly_banzai`
 * `docker@manager1:~$ docker service create --name ngx nginx` 
   * also you can create it using `docker service create --name ngx --replicas 2 nginx`
-  * what if we want to update it its exposed ports ?
-    * `docker service update --publish-add published=8080,target=80 ngx`
-* `docker@manager1:~$ docker service scale ngx=2` to scale the nginx 
+* #### **what if we want to update a service?**
+  * **update version**: `docker service update --image nginx:lastest --update-parellism 2 update-delay 5s ngx`
+  * **it its exposed ports**: `docker service update --publish-add published=8080,target=80 ngx`
+  * this will update the current nginx containers and their replicas version with latest nginx applying this update two containers in parallel at the same time and then wait 5 seconds before repeating the process
+  * in case there're nodes that is shutten down, we can spin it by starting the node `docker service start node_name`. if you notice the shutdown status in `worker1` and `manager1` when we re-run it a new node is spun
+  * if you noticed when we increased the replicas, the other `worker` got updated too with the nginx image
+    * ![alt text](<Screenshot from 2024-06-23 07-05-57.png>) 
+    * ![alt text](<Screenshot from 2024-06-23 07-08-56.png>)
+* `docker@manager1:~$ docker service scale ngx=2` to scale the nginx application to 2 replicas
   ```
     ngx scaled to 2
     overall progress: 2 out of 2 tasks 
@@ -1882,10 +1945,160 @@ let's create service
   ```
 * `docker@manager1:~$ docker service ps ngx`
   ```
-    ID                  NAME                IMAGE               NODE                DESIRED STATE       CURRENT STATE                ERROR               PORTS
+  ID                  NAME                IMAGE               NODE                DESIRED STATE       CURRENT STATE                ERROR               PORTS
   tp7uiu8830rs        ngx.1               nginx:latest        worker1             Running             Running 2 minutes ago                            
   ic71n82kbsig        ngx.2               nginx:latest        worker2             Running             Running about a minute ago                       
   ```
+* if we display the current networks in docker `docker network ls`
+  * you will find that there're two networks created which are **ingress** and **docker_gwbridge**
+    ```
+    docker@manager1:~$ docker network ls
+    NETWORK ID          NAME                       DRIVER              SCOPE
+    956f7ca10065        bridge                     bridge              local
+    c1cb387a80eb        docker_gwbridge            bridge              local
+    46a991956f64        host                       host                local
+    wd6gxbkqt7ub        ingress                    overlay             swarm
+    qxcn487t2yw3        ngxstackreplicas_default   overlay             swarm
+    5c79b02a899a        none                       null                local
+
+    ```
+  * **ingress** network is **created after swarm initialization** which uses **overlay driver**, it fills the gap of creating a network which is visible across multiple docker hosts
+
+### Failed Replicated Service Creation
+**failed service** here we tried to replicate ubuntu service but it failed
+* Example <br>
+ ![alt text](<Screenshot from 2024-06-22 17-12-44.png>)
+
+#### **Before answering why it failed**
+* Any service can be considered as stateful service
+* state means the conditions that the service abide by such as 
+  * configurations
+  * up / down
+  * network settings
+  * volume settings
+  * ... etc.
+* Containers are considered stateless as they're only interested being up/down
+* for example in banking system it's critical to know the time unlike containers that's why this system considered as a stateful system
+* that's what we meant by convergence where the desired state is met (more details below)
+* the desired state is determined by the running command 
+*  
+#### Answer
+
+* **Ubuntu doesn't have running service inside it**
+  * Each container should execute application (we said container=application (pid1))
+  * it's good for container as container is disposable
+  * it's not good for service (group of containers that form the service) 
+  * we couldn't reach the status of 2 ubuntu replicas to be up and running
+  * that's why we will have infinity loop to converge the service to met the desire state but it will fail
+* We can have a workaround by creating a running process inside the ubuntu container
+  * ![alt text](<Screenshot from 2024-06-22 17-37-57.png>)
+  * this approach can be a drawback since 
+
+
+
+
+#### Visualizer Example
+- **An application to visualize the clusters (nodes) and containers running inside it**
+```sh
+docker@manager1:~$ docker service create \
+  --name=viz \
+  --publish=8090:8080/tcp \
+  --constraint=node.role==manager \
+  --mount=type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
+  dockersamples/visualizer
+
+```
+On the browser visit 192.x.x.x:8090, you will find:
+![alt text](<Screenshot from 2024-06-22 16-05-57.png>)
+![alt text](<Screenshot from 2024-06-22 16-06-28.png>)
+
+### Highlighted definisions
+#### Ingress network
+is a **special internal network** that handles incoming traffic for the services running in the swarm. It **acts as a bridge** between **external traffic** and **the services**, ensuring that **incoming requests** are correctly **routed** to the appropriate containers **within the swarm**. it is **created after swarm initialization** which uses **overlay driver**.
+
+- `docker network inspect ingress` rom this configuration you can find the overlay driver
+```
+[
+    {
+        "Name": "ingress",
+        "Id": "wd6gxbkqt7ubddqdg0dyqdf0z",
+        "Created": "2024-06-21T05:18:11.140295797Z",
+        "Scope": "swarm",
+        "Driver": "overlay",
+        "EnableIPv6": false,
+        "IPAM": {
+            "Driver": "default",
+            "Options": null,
+            "Config": [
+                {
+                    "Subnet": "10.0.0.0/24",
+                    "Gateway": "10.0.0.1"
+                }
+            ]
+        },
+        "Internal": false,
+        "Attachable": false,
+        "Ingress": true,
+        "ConfigFrom": {
+            "Network": ""
+        },
+        "ConfigOnly": false,
+        "Containers": {
+            "f6567c0f122ccb147ebffd2577f6022873aa7afbdbd93541768524c1c5c5e6a2": {
+                "Name": "ngxstackreplicas_web.1.b8ja5spy9az9vrmgzm0qc5xz5",
+                "EndpointID": "a4f44b7c099296cac5e33a053cebde0d927e9b127aa4fc2b498cd259f84b0a62",
+                "MacAddress": "02:x:x:x:x:x",
+                "IPv4Address": "10.0.0.11/24",
+                "IPv6Address": ""
+            },
+            "ingress-sbox": {
+                "Name": "ingress-endpoint",
+                "EndpointID": "9817856d51ec3f1795ca3f0429d4e0197f7b4d98db56cbaa0c4bd91258611bb5",
+                "MacAddress": "02:42:0a:00:00:02",
+                "IPv4Address": "10.0.0.2/24",
+                "IPv6Address": ""
+            }
+        },
+        "Options": {
+            "com.docker.network.driver.overlay.vxlanid_list": "4096"
+        },
+        "Labels": {},
+        "Peers": [
+            {
+                "Name": "0dd7066ab043",
+                "IP": "192.x.x.103"
+            },
+            {
+                "Name": "cf5ce1fc9ff0",
+                "IP": "192.x.x.106"
+            },
+            {
+                "Name": "31084e06df8d",
+                "IP": "192.x.x.105"
+            }
+        ]
+    }
+]
+```
+#### docker_gwbridge 
+**is an internal network used by Docker to provide external connectivity to containers. It is a bridge network that allows containers to communicate with the external network, such as the host machine or other networks outside the Docker environment**
+
+#### Service converged 
+In the context of Docker Swarm, "Service converged" refers to the state **where the desired configuration of a service matches the actual state** in the swarm. This means that the number of replicas (instances of the service) specified in the service definition is running, and the service is functioning as intended.
+
+Here are key aspects of service convergence in Docker Swarm:
+
+1. **Desired State**: When you create or update a service, you specify a desired state, such as **the number of replicas**, **image version**, **environment variables**, and **other configurations**.
+
+2. **Actual State**: The actual state is what is currently running in the swarm cluster.
+
+3. **Convergence**: Convergence occurs when Docker Swarm's orchestrator ensures that the actual state matches the desired state. This involves:
+    - Ensuring the correct number of replicas are running.
+    - Placing the containers on the appropriate nodes.
+    - Monitoring the health of containers and replacing any that fail.
+    - Applying updates to the service configuration.
+
+**For example, if you create a service with 3 replicas, Docker Swarm will work to ensure that exactly 3 instances of that service are running at all times. If one instance fails, Docker Swarm will start a new instance to replace it, maintaining the desired state of 3 running instances. When this state is achieved and maintained, the service is said to have "converged."**
 
 ### Create global service
 it's like the daemon service
@@ -1898,7 +2111,7 @@ it's like the daemon service
   kqohy553g0c6: running   [==================================================>] 
   verify: Service converged 
   ```
-* if you notice that it created number of services equal the sum of the active nodes
+* **if you notice that it created number of services equal the sum of the active nodes**
 * `docker service ps ngx`
   ```
   ID                  NAME                            IMAGE               NODE                DESIRED STATE       CURRENT STATE                ERROR               PORTS
@@ -1908,7 +2121,7 @@ it's like the daemon service
   ```
 * `docker@manager1:~$  docker service ls`
   ```
-    ID                  NAME                MODE                REPLICAS            IMAGE               PORTS
+  ID                  NAME                MODE                REPLICAS            IMAGE               PORTS
   hsyq8gew172j        ngx                 global              3/3                 nginx:latest
   ```
 * we can use also port publishing flag
@@ -1916,16 +2129,29 @@ it's like the daemon service
   * now the nginx will be availble to any node in the swarm cluster despite replicas being equal two 2
 * now let's test it `ahmed@ahmed-3510:~$ docker-machine ls` and copy the ip address
   * visit on your browser `http://192.x.x.x:8080/` and you will find the nginx app running
-  * 
+
+## **Important note** when we visited `http://192.x.x.x:8080/` on browser and it was working despite not being on the same docker host which is ahmed machine. that's because of the ingress network so docker swarm was able to forward the request on the host which has the running nginx service 
 
 
+![alt text](<Screenshot from 2024-06-22 16-25-27.png>)
 
-## Docker Stack
-is like a manifest for kubernetes 
+# Docker Stack
+* It's complex to maintain all the nodes keep running this commands to start and stop it
+* we want easier way to automate and handle multiple nodes similar to what we did in the docker file and docker compose
+
+## Definition
+**is a feature used to deploy and manage a collection of related services (containers) in a Docker Swarm. It allows you to define and deploy multi-container applications using a YAML file (similar to Docker Compose) called a stack file**<br>
+* is like a manifest for kubernetes
+* docker stack runs only on docker swarm
 
 
+## Example 1
+
+* 
 * `docker@manager1:~$ docker stack ls`
- `NAME                SERVICES            ORCHESTRATOR`
+  ```
+  NAME                SERVICES            ORCHESTRATOR
+  ```
 * `docker@manager1:~$ vi docker-compose.yml`
   * docker@manager1:~$ cat docker-compose.yml
     ```
@@ -1962,7 +2188,8 @@ is like a manifest for kubernetes
     Creating network ngxstackreplicas_default
     Creating service ngxstackreplicas_web
     ``` 
-  * you can find the reflected replicas through
+  * **you can find the reflected replicas through `docker stack ls` & `docker stack ps`& `docker stack ps ngxstackreplicas` & `ngxstackreplicas_web`**
+  
     ```
     docker@manager1:~$ docker stack ls
     NAME                SERVICES            ORCHESTRATOR
@@ -1985,6 +2212,99 @@ is like a manifest for kubernetes
     docker@manager1:~$ docker service ls
     ID                  NAME                   MODE                REPLICAS            IMAGE               PORTS
     nmop0uupawq1        ngxstackreplicas_web   replicated          2/2                 nginx:latest        *:8080->80/tcp
-    docker@manager1:~$                                                                                                                           
-
     ```
+
+
+
+## Example 2
+- `git clone git@github.com:dockersamples/atsea-sample-shop-app.git`
+- ![alt text](<Screenshot from 2024-06-23 07-27-30.png>)
+  - you will find back-tier network is connected to DB and APP services
+  - you will find front-tier network is connected to visualizerand reverse-proxy services
+  - you will find payment which is overlay network is connected to app-server and payment gateway
+- `docker-stack.yml` file same as docker-compose file where you will find
+  - version, services, networks and secrets
+  - secrets to read the sensitive ENV variables without exposing them a
+- **external** in general when set to true means that it expects to read these vars in the build time
+  - if it doesn't find the vars, the vars are created and overriden it
+- first let's make my current host machine `ahmed` to be a manager node too 
+  - `docker swarm leave --force`
+  - by writing `docker swarm join-token manager` and copying the output
+  - then the copied command `docker swarm join --token SWMTKN-1-4sjrnukmz8a5id8oj0k5alupbkd32936y2lg6w7y26i3bwoj03-5h9n0ijqyblms8439lol5v9od 192.x.x.x:2377` 
+  - now the node joined the cluster
+    - ![alt text](<Screenshot from 2024-06-23 07-56-34.png>)
+- follow this commands in the `atsea-sample...` directory
+  - execute it one command at a time
+    ```
+    mkdir certs
+    openssl req -newkey rsa:4096 -nodes -sha256 -keyout certs/domain.key -x509 -days 365 -out certs/domain.crt
+
+    docker secret create revprox_cert certs/domain.crt
+
+    docker secret create revprox_key certs/domain.key
+
+    docker secret create postgres_password certs/domain.key
+
+    echo staging | docker secret create staging_token -
+    ```
+  - to display the created secrets in docker `docker secret ls`
+    ```
+    ID                          NAME                DRIVER    CREATED         UPDATED
+    i6y68xuqmrx6a9vo1v2cv9y4r   postgres_password             2 minutes ago   2 minutes ago
+    z5c2vrkq71rgf5u5bdxaq4m99   revprox_cert                  2 minutes ago   2 minutes ago
+    tdgeikqw9qwuri9vfir95sew5   revprox_key                   2 minutes ago   2 minutes ago
+    at5ku0q8n0onm5zyv2ua02suo   staging_token                 7 seconds ago   7 seconds ago
+    ```
+- to build the docker stack `docker stack deploy --compose-file docker-stack.yml seastack`
+  - the result
+    ```
+    Since --detach=false was not specified, tasks will be created in the background.
+    In a future release, --detach=false will become the default.
+    Creating service seastack_reverse_proxy
+    Creating service seastack_database
+    Creating service seastack_appserver
+    Creating service seastack_visualizer
+    Creating service seastack_payment_gateway
+    ```
+- now visit the app by opening the browser and typing your local ip address `https://192.x.x.x:443` then proceed unsafe 
+  - ![alt text](<Screenshot from 2024-06-23 08-18-41.png>)
+
+
+
+## Drawback of using Swarm approach
+
+- volumes are maintained separetly per each node not replicated
+- image cache is managed by node so if node is failed. if you want to move the cached image to another node you won't be able to do so if there're running applications depend on it it would cause an issue since it will pull the image all over again
+- it doesn't fit the production level
+
+
+# Portainer GUI solution
+
+## Instalation
+
+- since we have docker swarm `https://docs.portainer.io/start/install-ce/server/swarm/linux`
+- `mkdir portainer-example && cd portainer-example/`
+- `curl -L https://downloads.portainer.io/ce2-19/portainer-agent-stack.yml -o portainer-agent-stack.yml`
+- `docker stack deploy -c portainer-agent-stack.yml portainer`
+  ```
+  Since --detach=false was not specified, tasks will be created in the background.
+  In a future release, --detach=false will become the default.
+  Creating network portainer_agent_network
+  Creating service portainer_agent
+  Creating service portainer_portainer
+  ```
+- at manager node `docker@manager1:~$ docker ps`
+  ```
+  CONTAINER ID        IMAGE                             COMMAND                  CREATED             STATUS                 PORTS               NAMES
+  e585fc91c94a        portainer/agent:2.19.5            "./agent"                2 seconds ago       Up 1 second                                portainer_agent.y3ai2o5ld850ciix33b88ra07.cqum2maa5uokfh2ny0hw9i59b
+  ``` 
+  - visit `https://192.x.x.x:9443/` and proceed unsafe
+    - `i don't know why localhost isn't working, probably since the manager node is in another network`
+    - setup username and password `admin` & `admin123456789`
+- here you can see more details in a better UI
+  - you can check stacks, services, secrets, swarm
+  - ![alt text](<Screenshot from 2024-06-23 09-02-45.png>)
+  - ![alt text](<Screenshot from 2024-06-23 08-46-18.png>)
+  - ![alt text](<Screenshot from 2024-06-23 08-46-33.png>)
+  - ![alt text](<Screenshot from 2024-06-23 08-46-53.png>)
+  - ![alt text](<Screenshot from 2024-06-23 08-48-21.png>)
